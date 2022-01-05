@@ -3,4 +3,6 @@ https://www.curseforge.com/wow/addons/loca-loss-of-control-alerter-for-tbc-class
 
 Modified version with added option to look like "Loss of Control" instead of retail style.
 
-Requires OmniCC to display timer.
+# Note:
+
+Requires OmniCC to display timer when using Loss of Control style
