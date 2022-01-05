@@ -104,8 +104,16 @@ locaDebuffs.options = {
       get = function(info) return locaDebuffs.db.showSecondsLabel end,
       set = function(info, val) locaDebuffs:SetShowSecondsLabel(val) end,
     },
-    debuffCategories = {
+    showClassicStyle = {
       order = 10,
+      type = "toggle",
+      name = "Use Loss of Control style",
+      width = "full",
+      get = function(info) return locaDebuffs.db.showClassicStyle end,
+      set = function(info, val) locaDebuffs:SetShowClassicStyle(val) end,
+    },
+    debuffCategories = {
+      order = 11,
       type = "group",
       name = "Tracked Categories",
       childGroups = "select",
@@ -156,7 +164,7 @@ locaDebuffs.options = {
       }
     },
     debuffList = {
-      order = 11,
+      order = 12,
       type = "group",
       name = "Tracked Debuffs",
       childGroups = "select",
@@ -311,6 +319,29 @@ end
 function locaDebuffs:UpdateContainer()
   container:SetScale(locaDebuffs.db.scale)
   container:SetAlpha(locaDebuffs.db.alpha)
+
+ if not locaDebuffs.db.showClassicStyle then
+
+  if locaDebuffs.db.showSecondsLabel then
+    iconFrame.secondsText:Show()
+  else
+    iconFrame.secondsText:Hide()
+  end
+  
+  if locaDebuffs.db.showRedLines then
+    iconFrame.redLineTop:Show()
+    iconFrame.redLineBottom:Show()
+  else
+    iconFrame.redLineTop:Hide()
+    iconFrame.redLineBottom:Hide()
+  end
+
+  if locaDebuffs.db.showBackground then
+    iconFrame.backgroundTexture:Show()
+  else
+    iconFrame.backgroundTexture:Hide()
+  end
+ end
 end
 
 function locaDebuffs:OnInitialize(db)
@@ -350,11 +381,20 @@ function locaDebuffs:CreateIcon(debuff)
   btn:SetWidth(40)
   btn:SetHeight(40)
   btn:SetFrameStrata("LOW")
-  btn:SetPoint("CENTER", container, "CENTER", 0, 0)
+  if locaDebuffs.db.showClassicStyle then
+    btn:SetPoint("CENTER", container, "CENTER", 0, 0)
+  else
+    btn:SetPoint("LEFT", container, "LEFT", 8, 0)
+  end
 
   local cd = CreateFrame("Cooldown", nil, btn, "CooldownFrameTemplate")
-  cd.noomnicc = false
-  cd.noCooldownCount = false
+  if locaDebuffs.db.showClassicStyle then
+    cd.noomnicc = false
+    cd.noCooldownCount = false
+  else
+    cd.noomnicc = true
+    cd.noCooldownCount = true
+  end
   cd:SetAllPoints(true)
   cd:SetFrameStrata("LOW")
   cd:SetUseCircularEdge(true)
@@ -365,6 +405,50 @@ function locaDebuffs:CreateIcon(debuff)
   local texture = btn:CreateTexture(nil, "ARTWORK")
   texture:SetAllPoints(true)
 
+if not locaDebuffs.db.showClassicStyle then
+  local backgroundTexture = btn:CreateTexture(nil, "BACKGROUND")
+  backgroundTexture:SetTexture("Interface\\Cooldown\\LoC-ShadowBG")
+  backgroundTexture:SetPoint("BOTTOM", container, "BOTTOM", 0, 0)
+  backgroundTexture:SetWidth(160)
+  backgroundTexture:SetHeight(50)
+  backgroundTexture:SetVertexColor(1, 1, 1, 0.6)
+
+  local redLineTop = btn:CreateTexture(nil, "BACKGROUND")
+  redLineTop:SetTexture("Interface\\Cooldown\\Loc-RedLine")
+  redLineTop:SetWidth(160)
+  redLineTop:SetHeight(27)
+  redLineTop:SetPoint("BOTTOM", container, "TOP", 0, 0)
+
+  local redLineBottom = btn:CreateTexture(nil, "BACKGROUND")
+  redLineBottom:SetTexture("Interface\\Cooldown\\Loc-RedLine")
+  redLineBottom:SetWidth(160)
+  redLineBottom:SetHeight(27)
+  redLineBottom:SetTexCoord(0, 1, 1, 0)
+  redLineBottom:SetPoint("TOP", container, "BOTTOM", 0, 0)
+
+  local debuffTitle = btn:CreateFontString(nil, "ARTWORK")
+  debuffTitle:SetFont(STANDARD_TEXT_FONT, 18, "OUTLINE")
+  debuffTitle:SetTextColor(1, 1, 0, 1)
+  debuffTitle:SetPoint("LEFT", btn, "RIGHT", 6, 8)
+
+  local text = btn:CreateFontString(nil, "ARTWORK")
+  text:SetFont(STANDARD_TEXT_FONT, 16, "OUTLINE")
+  text:SetTextColor(1, 1, 1, 1)
+  text:SetPoint("LEFT", btn, "RIGHT", 6, -10)
+
+  local secondsText = btn:CreateFontString(nil, "ARTWORK")
+  secondsText:SetFont(STANDARD_TEXT_FONT, 14, "OUTLINE")
+  secondsText:SetTextColor(1, 1, 1, 1)
+  secondsText:SetPoint("LEFT", btn, "RIGHT", 36, -10)
+  secondsText:SetText("seconds")
+
+  btn.text = text
+  btn.secondsText = secondsText
+  btn.redLineBottom = redLineBottom
+  btn.redLineTop = redLineTop
+  btn.debuffTitle = debuffTitle
+  btn.backgroundTexture = backgroundTexture
+ end
   btn.textureIcon = texture
   btn.cd = cd
 
@@ -382,18 +466,32 @@ function locaDebuffs:CreateIcon(debuff)
     btn.active = true
 
     btn.textureIcon:SetTexture(debuff.icon)
+  if not locaDebuffs.db.showClassicStyle then
+    btn.debuffTitle:SetText(debuff.category)
+  end
     
     container:SetBackdropColor(0, 0, 0, 0.4)
     btn:Show()
     if timeLeft then
       btn.cd:Show()
       btn.cd:SetCooldown(GetTime(), timeLeft)
+  if not locaDebuffs.db.showClassicStyle then
+      btn.text:Show()
+  end
       btn.start = GetTime()
       btn.duration = timeLeft
       btn.settimeleft(timeLeft)
       btn:SetScript("OnUpdate", function(self) locaDebuffs:OnUpdateTimer(self) end)
+  if not locaDebuffs.db.showClassicStyle then
+      btn.secondsText:SetPoint("LEFT", btn, "RIGHT", 6 + btn.text:GetStringWidth(), -10)
+      btn.secondsText:Show()
+  end
     else
       btn.cd:Hide()
+  if not locaDebuffs.db.showClassicStyle then
+      btn.text:Hide()
+      btn.secondsText:Hide()
+  end
     end
   end
 
@@ -402,6 +500,9 @@ function locaDebuffs:CreateIcon(debuff)
     if not btn.active then return end
     container:SetBackdropColor(0, 0, 0, 0)
     btn:Hide()
+  if not locaDebuffs.db.showClassicStyle then
+    btn.text:SetText("")
+  end
     btn.cd:Hide()
     btn:SetScript("OnUpdate", nil)
     btn.active = false
@@ -409,6 +510,17 @@ function locaDebuffs:CreateIcon(debuff)
 
   btn.settimeleft = function(timeleft)
     btn.timeLeft = timeleft
+  if not locaDebuffs.db.showClassicStyle then
+    btn.text:Show()
+    btn.text:SetFormattedText("%.1f", timeleft)
+
+    -- set smaller font if the time left is too big, so it can fit in the icon
+    if timeleft > 60 then
+      btn.text:SetFont(STANDARD_TEXT_FONT, 14, "OUTLINE")
+    else
+      btn.text:SetFont(STANDARD_TEXT_FONT, 16, "OUTLINE")
+    end
+  end
   end
 
   btn:Hide()
@@ -521,6 +633,11 @@ function locaDebuffs:SetShowBackground(val)
   locaDebuffs.db.showBackground = val
   
   locaDebuffs:UpdateContainer()
+end
+
+function locaDebuffs:SetShowClassicStyle(val)
+  locaDebuffs.db.showClassicStyle = val
+  ReloadUI()
 end
 
 function locaDebuffs:CreateDebuffUIList()

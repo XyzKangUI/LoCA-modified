@@ -14,9 +14,10 @@ addon.defaultSettings = {
         { name = "Stun", active = true, },
         { name = "Full", active = true, }
       },
-      showRedLines = true,
-      showBackground = true,
-      showSecondsLabel = true,
+      showRedLines = false,
+      showBackground = false,
+      showSecondsLabel = false,
+      showClassicStyle = true,
       debuffsTable = {
         { spellId = 122, category = "Snared", weight = 1, active = true, type = 1 },     --[[ Frost Nova --]]
         { spellId = 12494, category = "Snared", weight = 1, active = true, type = 1 },   --[[ Frostbite --]]
