@@ -298,7 +298,7 @@ function locaDebuffs:SavePosition()
 end
 
 function locaDebuffs:CreateContainerFrame()
-  container = CreateFrame("Frame", nil, UIParent, BackdropTemplateMixin and "BackdropTemplate")
+  container = CreateFrame("Frame", "Loca", UIParent, BackdropTemplateMixin and "BackdropTemplate")
   container:SetMovable(false)
   container:SetWidth(160)
   container:SetBackdrop({
